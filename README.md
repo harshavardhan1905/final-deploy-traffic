@@ -52,15 +52,24 @@ You will need **API keys** for both services.
 
 ---
 
-## 4.Installation & Setup
+## 3.Installation & Setup
 
 1. **Clone** the repository (or download the source code):
 
    ```bash
-   git clone https://github.com/YourUsername/RealTimeRouteSuggestion.git
-   cd RealTimeRouteSuggestion
+       git clone https://github.com/harshavardhan1905/final-deploy-traffic.git
+       cd RealTimeRouteSuggestion
 2. **Create a virtual environment (optional but recommended):**
    ```bash
-     python -m venv venv
+      python -m venv venv
       source venv/bin/activate  # Linux/Mac
       venv\Scripts\activate     # Windows
+## 4.Usage
+1.  **Run the FastAPI server:**
+    ```bash
+      uvicorn main:app --reload
+3.  **Access the map in your browser at:**
+   ```bash
+       http://127.0.0.1:8000/map?origin=LONG,LAT&destination=LONG,LAT
+
+   
