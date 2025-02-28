@@ -68,6 +68,8 @@ You will need **API keys** for both services.
     ![image](https://github.com/user-attachments/assets/56a4b6c2-be3c-4620-a6b3-f857d79deead)
 
 ![Screenshot 2025-02-28 152748](https://github.com/user-attachments/assets/76666af1-d4f6-40d7-ae8b-d1e32e631f28)
+![image](https://github.com/user-attachments/assets/2dd19679-464c-4955-a5e4-2dbea4b3b025)
+
 
 ## 4.Usage
 1.  **Run the FastAPI server:**
