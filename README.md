@@ -60,6 +60,7 @@ You will need **API keys** for both services.
    git clone https://github.com/YourUsername/RealTimeRouteSuggestion.git
    cd RealTimeRouteSuggestion
 2. **Create a virtual environment (optional but recommended):**
-   ```python -m venv venv
+   ```bash
+     python -m venv venv
       source venv/bin/activate  # Linux/Mac
       venv\Scripts\activate     # Windows
