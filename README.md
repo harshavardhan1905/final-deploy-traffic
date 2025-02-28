@@ -18,7 +18,7 @@ This project provides a **real-time traffic route suggestion** system using **Fa
 
 ---
 
-## Features
+## 1.Features
 
 - **FastAPI** backend that handles route requests.
 - **OpenRouteService (ORS)** to compute base route and travel time.
@@ -35,7 +35,7 @@ This project provides a **real-time traffic route suggestion** system using **Fa
 
 ---
 
-## Tech Stack & Requirements
+## 2.Tech Stack & Requirements
 
 - **Python 3.8+**
 - **FastAPI** for the web server
@@ -52,11 +52,14 @@ You will need **API keys** for both services.
 
 ---
 
-## Installation & Setup
+## 4.Installation & Setup
 
 1. **Clone** the repository (or download the source code):
 
    ```bash
    git clone https://github.com/YourUsername/RealTimeRouteSuggestion.git
    cd RealTimeRouteSuggestion
-##Create a virtual environment (optional but recommended):
+2. **Create a virtual environment (optional but recommended):**
+   ```python -m venv venv
+      source venv/bin/activate  # Linux/Mac
+      venv\Scripts\activate     # Windows
