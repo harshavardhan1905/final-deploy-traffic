@@ -64,6 +64,9 @@ You will need **API keys** for both services.
       python -m venv venv
       source venv/bin/activate  # Linux/Mac
       venv\Scripts\activate     # Windows
+## Snapshots:
+    ![image](https://github.com/user-attachments/assets/e45520f5-cb9f-4081-8ac9-aff3861a5504)
+
 ## 4.Usage
 1.  **Run the FastAPI server:**
     ```bash
