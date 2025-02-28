@@ -66,10 +66,15 @@ You will need **API keys** for both services.
       venv\Scripts\activate     # Windows
 ## Snapshots:
     ![image](https://github.com/user-attachments/assets/56a4b6c2-be3c-4620-a6b3-f857d79deead)
-
+**Initial**
 ![Screenshot 2025-02-28 152748](https://github.com/user-attachments/assets/76666af1-d4f6-40d7-ae8b-d1e32e631f28)
+**Source & Destination**
 ![image](https://github.com/user-attachments/assets/2dd19679-464c-4955-a5e4-2dbea4b3b025)
+**Live Traffic**
 ![image](https://github.com/user-attachments/assets/f9e713a6-2b09-4874-a134-941626ae3ce0)
+**Response proof:**
+![image](https://github.com/user-attachments/assets/c699b24a-0d91-4e6f-9b0e-4cf45a00d3a9)
+
 
 
 
