@@ -1,40 +1,62 @@
-# Real-Time Route Suggestion
+# Real-Time Route Suggestion with FastAPI & Folium
 
-This project displays real-time traffic data on a Folium map, with the **final travel time** shown at the end point.
+This project provides a **real-time traffic route suggestion** system using **FastAPI** (Python), **TomTom** traffic data, and **Folium** for map visualization. It dynamically fetches traffic information and calculates:
 
-## Example HTML Embedding
-
-
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <title>Real-Time Route Suggestion</title>
-</head>
-<body>
-  <h1>Real-Time Route Suggestion</h1>
-  <p>
-    The map below is served by our FastAPI endpoint at
-    <code>http://localhost:8000/map?origin=LONG,LAT&amp;destination=LONG,LAT</code>.
-  </p>
-  
-  <!-- Adjust width, height, and styling as needed -->
-  <iframe 
-      src="http://localhost:8000/map?origin=78.53645,17.44957&destination=78.48838,17.60214"
-      width="100%"
-      height="600"
-      style="border:none;">
-  </iframe>
-</body>
-</html>
+- **Color-coded** route segments (green, yellow, red) based on congestion.
+- **Estimated travel time** at the end marker, factoring in **traffic delays**.
 
 ---
 
-### **How It Works**
+## Table of Contents
+1. [Features](#features)  
+2. [Tech Stack & Requirements](#tech-stack--requirements)  
+3. [Installation & Setup](#installation--setup)  
+4. [Usage](#usage)  
+5. [Embedding the Map in HTML](#embedding-the-map-in-html)  
+6. [Future Improvements](#future-improvements)  
+7. [License](#license)
 
-- The **`<iframe>`** points to your **FastAPI** route, which returns an **HTML page** containing the Folium map.  
-- **GitHub** won’t render this **iframe** in the README, but it provides an example of how others could embed your map in their own HTML pages.  
+---
 
-That’s it! Feel free to customize the **styling**, **dimensions**, or **text** to match your project’s needs.
+## Features
 
+- **FastAPI** backend that handles route requests.
+- **OpenRouteService (ORS)** to compute base route and travel time.
+- **TomTom Traffic API** to fetch real-time congestion levels.
+- **Folium** to render interactive maps in HTML.
+- **Color-coded** segments:
+  - **Green**: Low congestion  
+  - **Yellow**: Moderate congestion  
+  - **Red**: Heavy congestion  
+- **End Marker** shows:
+  - **Base Time** from ORS  
+  - **Traffic Delay** from TomTom  
+  - **Final Estimated Time**
 
+---
+
+## Tech Stack & Requirements
+
+- **Python 3.8+**
+- **FastAPI** for the web server
+- **Uvicorn** for running FastAPI
+- **Requests** to call external APIs (TomTom, ORS)
+- **Folium** for map rendering
+- **OpenRouteService** Python client for decoding polylines
+
+**APIs Needed**  
+1. **OpenRouteService**: [https://openrouteservice.org/](https://openrouteservice.org/)  
+2. **TomTom Traffic**: [https://developer.tomtom.com/](https://developer.tomtom.com/)
+
+You will need **API keys** for both services.
+
+---
+
+## Installation & Setup
+
+1. **Clone** the repository (or download the source code):
+
+   ```bash
+   git clone https://github.com/YourUsername/RealTimeRouteSuggestion.git
+   cd RealTimeRouteSuggestion
+##Create a virtual environment (optional but recommended):
