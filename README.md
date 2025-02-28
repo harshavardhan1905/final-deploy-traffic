@@ -65,7 +65,9 @@ You will need **API keys** for both services.
       source venv/bin/activate  # Linux/Mac
       venv\Scripts\activate     # Windows
 ## Snapshots:
-    [image](https://github.com/user-attachments/assets/e45520f5-cb9f-4081-8ac9-aff3861a5504)
+    ![image](https://github.com/user-attachments/assets/56a4b6c2-be3c-4620-a6b3-f857d79deead)
+
+![Screenshot 2025-02-28 152748](https://github.com/user-attachments/assets/76666af1-d4f6-40d7-ae8b-d1e32e631f28)
 
 ## 4.Usage
 1.  **Run the FastAPI server:**
