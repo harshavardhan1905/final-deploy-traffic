@@ -69,6 +69,8 @@ You will need **API keys** for both services.
 
 ![Screenshot 2025-02-28 152748](https://github.com/user-attachments/assets/76666af1-d4f6-40d7-ae8b-d1e32e631f28)
 ![image](https://github.com/user-attachments/assets/2dd19679-464c-4955-a5e4-2dbea4b3b025)
+![image](https://github.com/user-attachments/assets/f9e713a6-2b09-4874-a134-941626ae3ce0)
+
 
 
 ## 4.Usage
