@@ -1,0 +1,127 @@
+gandi Maisamma to kukatpally url is : http://127.0.0.1:8000/map?origin=78.42302799224855,17.575057307999252&destination=78.41159105300905,17.4849054198743
+secunderabad : 78.502700, 17.433466
+mgbs: 78.485974, 17.379791
+iit hyderabd: 78.120861, 17.592976
+Gatkeshar: 78.669319, 17.445156
+lb nagar:  78.547912, 17.349768
+gandi Maisamma: 78.423146, 17.575149
+kphb or kukatpally: 78.403566, 17.492928
+Example data:
+"""incidents_data = {
+        "incidents": [
+            {
+                "id": "INC12345",
+                "type": "ACCIDENT",
+                "severity": "HIGH",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [78.4200, 17.5300]  # [longitude, latitude]
+                },
+                "properties": {
+                    "description": "Major accident reported near Paradise Circle. Expect delays."
+                },
+                "startTime": "2025-02-23T08:30:00Z",
+                "endTime": "2025-02-23T10:00:00Z",
+                "impact": "LANE_CLOSED"
+            },
+            {
+                "id": "INC67890",
+                "type": "ROADWORK",
+                "severity": "MEDIUM",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [78.4150, 17.5050]
+                },
+                "properties": {
+                    "description": "Roadwork on Necklace Road. One lane closed."
+                },
+                "startTime": "2025-02-23T07:00:00Z",
+                "endTime": "2025-02-23T18:00:00Z",
+                "impact": "MODERATE_DELAY"
+            },
+            {
+                "id": "INC54321",
+                "type": "TRAFFIC_JAM",
+                "severity": "LOW",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [78.4120, 17.4900]
+                },
+                "properties": {
+                    "description": "Slow traffic near Lakdi Ka Pul due to congestion."
+                },
+                "startTime": "2025-02-23T09:15:00Z",
+                "endTime": "2025-02-23T11:30:00Z",
+                "impact": "SLOW_TRAFFIC"
+            }
+        ]
+    }"""
+
+
+    original:
+    uccess fetching incidents: {'incidents': [{'type': 'Feature', 'properties': {'iconCategory': 8}, 'geometry': {'type': 'LineString', 'coordinates': [[78.4160622718, 17.4918074939], [78.4163157405, 17.4917458577], [78.416795856, 17.491588929]]}}, {'type': 'Feature', 'properties': {'iconCategory': 8}, 'geometry': {'type': 'LineString', 'coordinates': [[78.416795856, 17.491588929], [78.4163157405, 17.4917458577], [78.4160622718, 17.4918074939]]}}]}
+Traffic API Response: {'incidents': [{'type': 'Feature', 'properties': {'iconCategory': 8}, 'geometry': {'type': 'LineString', 'coordinates': [[78.4160622718, 17.4918074939], [78.4163157405, 17.4917458577], [78.416795856, 17.491588929]]}}, {'type': 'Feature', 'properties': {'iconCategory': 8}, 'geometry': {'type': 'LineString', 'coordinates': [[78.416795856, 17.491588929], [78.4163157405, 17.4917458577], [78.4160622718, 17.4918074939]]}}]}
+
+
+<script>
+        const ORS_API_KEY = "5b3ce3597851110001cf624882ff503deb274a2981515b5272c8cb05"; // Replace with your ORS API key
+        let destinationCoords = "";
+    
+        function fetchCoordinates(searchInputId, resultInputId) {
+            let location = document.getElementById(searchInputId).value;
+            if (!location) {
+                alert("Please enter a location to search.");
+                return;
+            }
+    
+            let apiUrl = `https://api.openrouteservice.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(location)}`;
+    
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.features.length > 0) {
+                        let lat = data.features[0].geometry.coordinates[1]; // Latitude
+                        let lon = data.features[0].geometry.coordinates[0]; // Longitude
+                        document.getElementById(resultInputId).value = `"${lon}, ${lat}"`;
+    
+                        if (resultInputId === "destination") {
+                            destinationCoords = `"${lon},${lat}"`;
+                        }
+                    } else {
+                        alert("Location not found. Try again.");
+                    }
+                })
+                .catch(error => console.error("Error fetching coordinates:", error));
+        }
+    
+        function loadMap(source, destination) {
+            let mapUrl = `http://127.0.0.1:8000/map?origin=${source}&destination=${destination}`;
+            document.getElementById("mapFrame").src = mapUrl;
+        }
+    
+        function startTracking() {
+            if (!destinationCoords) {
+                alert("Please enter a destination first.");
+                return;
+            }
+    
+            if (navigator.geolocation) {
+                navigator.geolocation.watchPosition(
+                    (position) => {
+                        let userCoords = `${position.coords.latitude},${position.coords.longitude}`;
+                        console.log("User's current location:", userCoords);
+                        loadMap(userCoords, destinationCoords);
+                    },
+                    (error) => {
+                        console.error("Error getting location:", error);
+                        alert("Location access denied. Enable GPS to continue.");
+                    },
+                    { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+                );
+            } else {
+                alert("Geolocation is not supported by your browser.");
+            }
+        }
+    </script>
+
+    let mapUrl = `http://127.0.0.1:8000/map?origin=${source}&destination=${destination}`;
