@@ -1,117 +1,54 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from starlette.requests import Request
-from dotenv import load_dotenv
-
+from fastapi import FastAPI, HTTPException, WebSocket
+import uuid
+from fastapi.staticfiles import StaticFiles 
+import asyncio
+from position_tracker import PositionTracker
 import requests
 import folium
 import openrouteservice
-import math
-import os
+from fastapi.responses import HTMLResponse,FileResponse
+from route_service import (
+    fetch_route,
+    get_traffic,
+    get_incidents,
+    calculate_eta,
+    TOMTOM_API_KEY,
+    ORS_API_KEY
+)
 
 app = FastAPI()
-load_dotenv()
-# Mount static files
+# Mount the static directory
 app.mount("/static", StaticFiles(directory="static"), name="static")
+position_tracker = PositionTracker()
 
-# Setup template rendering
-templates = Jinja2Templates(directory="templates")
+@app.get("/")
+async def read_root():
+    return FileResponse("./templates/index.html")
 
-# API Keys from environment variables
-# TOMTOM_API_KEY = "eZEcIlVKK9lGUqDzqLtnm8b7xOG1FfFG"
-# ORS_API_KEY = "5b3ce3597851110001cf624882ff503deb274a2981515b5272c8cb05"
-
-# if not TOMTOM_API_KEY or not ORS_API_KEY:
-#     raise ValueError("API keys not set in environment variables.")
-
-# ORS_URL = "https://api.openrouteservice.org/v2/directions/driving-car"
-# TOMTOM_TRAFFIC_URL = "https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/10/json"
-
-TOMTOM_API_KEY = os.environ.get("TOMTOM_API_KEY")
-ORS_API_KEY = os.environ.get("ORS_API_KEY")
-# ORS_API_KEY = "5b3ce3597851110001cf624882ff503deb274a2981515b5272c8cb05"
-ORS_URL = "https://api.openrouteservice.org/v2/directions/driving-car"
-TOMTOM_TRAFFIC_URL = "https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/10/json"
-TOMTOM_INCIDENTS_URL = "https://api.tomtom.com/traffic/services/5/incidentDetails"
-print("ORS_API_KEY:", ORS_API_KEY)
-print("TOMTOM_API_KEY:", TOMTOM_API_KEY)
-
-# Haversine formula for distance calculation
-# def haversine(lat1, lon1, lat2, lon2):
-#     R = 6371.0
-#     lat1_r, lon1_r, lat2_r, lon2_r = map(math.radians, [lat1, lon1, lat2, lon2])
-#     dlat = lat2_r - lat1_r
-#     dlon = lon2_r - lon1_r
-#     a = (math.sin(dlat / 2) ** 2 + math.cos(lat1_r) * math.cos(lat2_r) * math.sin(dlon / 2) ** 2)
-#     c = 2 * math.asin(math.sqrt(a))
-#     return R * c
-
-# Fetch route from OpenRouteService
-def fetch_route(origin: str, destination: str):
-    """Fetch route data from ORS API."""
-    headers = {"Authorization": ORS_API_KEY, "Content-Type": "application/json"}
+@app.websocket("/ws/position/{client_id}")
+async def websocket_endpoint(websocket: WebSocket, client_id: str):
+    await position_tracker.connect(websocket, client_id)
     try:
-        origin_lon, origin_lat = map(float, origin.split(","))
-        destination_lon, destination_lat = map(float, destination.split(","))
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid coordinate format. Use 'longitude,latitude'.")
-    location_data = {
-        "coordinates": [[origin_lon, origin_lat], [destination_lon, destination_lat]],
-        "geometry": "true"
-    }
-    response = requests.post(ORS_URL, json=location_data, headers=headers)
-    if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code, detail=f"ORS API Error: {response.text}")
-    data = response.json()
-    if "routes" not in data or not data["routes"]:
-        raise HTTPException(status_code=404, detail="No route found. Check if the locations are reachable.")
-    print("success fetching route")
-    return data
+        while True:
+            data = await websocket.receive_json()
+            await position_tracker.update_position(
+                client_id,
+                data["latitude"],
+                data["longitude"]
+            )
+            # Update the map with new position
+            await websocket.send_json({
+                "type": "position_update",
+                "latitude": data["latitude"],
+                "longitude": data["longitude"]
+            })
+            await asyncio.sleep(10)  # Update every 10 seconds
+    except Exception as e:
+        print(f"WebSocket error: {e}")
+    finally:
+        position_tracker.disconnect(client_id)
 
-# Fetch traffic data from TomTom
-def get_traffic(lat: float, lon: float):
-    """Fetch real-time traffic flow data from TomTom."""
-    params = {"key": TOMTOM_API_KEY, "point": f"{lat},{lon}"}
-    response = requests.get(TOMTOM_TRAFFIC_URL, params=params)
-    if response.status_code != 200:
-        return None  # Return None if traffic data is unavailable
-    print("Sucess fetching traffic")
-    return response.json()
 
-def get_incidents(min_lat: float, min_lon: float, max_lat: float, max_lon: float):
-    """Fetch real-time traffic incidents from TomTom with debugging."""
-    params = {
-        "bbox": f"{min_lon},{min_lat},{max_lon},{max_lat}",
-        "key": TOMTOM_API_KEY
-    }
-    response = requests.get(TOMTOM_INCIDENTS_URL, params=params)
-    print("Traffic API Response Status Code:", response.status_code)
-    if response.status_code != 200:
-        print("Traffic API Error Response:", response.text)
-        return None  # Return None if incidents data is unavailable
-    incidents_data = response.json()
-    print("Success fetching incidents:", incidents_data)
-    return incidents_data
-
-# def get_points_along_route(route_coords, interval=0.01):
-#     points = []
-#     for i in range(len(route_coords) - 1):
-#         lat1, lon1 = route_coords[i]
-#         lat2, lon2 = route_coords[i + 1]
-#         dist = ((lat2 - lat1)**2 + (lon2 - lon1)**2)**0.5
-#         num_points = int(dist / interval)
-#         for j in range(num_points):
-#             fraction = j / num_points
-#             lat = lat1 + (lat2 - lat1) * fraction
-#             lon = lon1 + (lon2 - lon1) * fraction
-#             points.append((lat, lon))
-#     return points
-
-@app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get("/map", response_class=HTMLResponse)
 def show_map(origin: str, destination: str):
@@ -124,9 +61,9 @@ def show_map(origin: str, destination: str):
     client = openrouteservice.Client(key=ORS_API_KEY)
     route_coords = openrouteservice.convert.decode_polyline(data['routes'][0]['geometry'])
     route_coords = [(coord[1], coord[0]) for coord in route_coords['coordinates']]
-    
     m = folium.Map(location=route_coords[0], zoom_start=13)
-    
+    # Collect traffic data for route segments
+    traffic_data_list = []
     segment_length = max(1, len(route_coords) // 30)
     for i in range(0, len(route_coords) - 1, segment_length):
         mid_index = i + segment_length // 2
@@ -134,6 +71,7 @@ def show_map(origin: str, destination: str):
             mid_index = len(route_coords) - 1
         mid_lat, mid_lon = route_coords[mid_index]
         traffic_data = get_traffic(mid_lat, mid_lon)
+        traffic_data_list.append(traffic_data)
         color = "blue"
         if traffic_data and "flowSegmentData" in traffic_data:
             speed = traffic_data["flowSegmentData"].get("currentSpeed", 0)
@@ -149,6 +87,21 @@ def show_map(origin: str, destination: str):
     
     folium.Marker(route_coords[0], tooltip="Start", icon=folium.Icon(color="green")).add_to(m)
     folium.Marker(route_coords[-1], tooltip="End", icon=folium.Icon(color="red")).add_to(m)
+    # Calculate ETA after collecting traffic data
+    eta_info = calculate_eta(route_coords, traffic_data_list)
+    
+    # Add ETA information box to map
+    eta_html = f"""
+    <div style="position: fixed; top: 10px; right: 10px; z-index: 1000; 
+                background-color: white; padding: 10px; border: 2px solid grey; 
+                border-radius: 5px; font-family: Arial, sans-serif;">
+        <h4 style="margin: 0 0 10px 0;">Journey Information</h4>
+        <p style="margin: 5px 0;"><strong>ETA:</strong> {eta_info['arrival_time']}</p>
+        <p style="margin: 5px 0;"><strong>Duration:</strong> {eta_info['total_time_minutes']} mins</p>
+        <p style="margin: 5px 0;"><strong>Distance:</strong> {eta_info['total_distance_km']} km</p>
+    </div>
+    """
+    m.get_root().html.add_child(folium.Element(eta_html))
 
     min_lat, min_lon = min(origin_lat, destination_lat), min(origin_lon, destination_lon)
     max_lat, max_lon = max(origin_lat, destination_lat), max(origin_lon, destination_lon)
@@ -170,3 +123,4 @@ def show_map(origin: str, destination: str):
                 icon=folium.Icon(color="orange", icon="exclamation-triangle", prefix="fa")
             ).add_to(m)
     return m._repr_html_()
+

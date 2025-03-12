@@ -1,33 +1,128 @@
- 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Traffic Map</title>
-    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="../static/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 </head>
+
 <body>
     
-    <form action="/map" method="get">
-        <h1 class="header">Traffic Route Visualization</h1>
-        <label>Origin (lon,lat):</label>
-        <input type="text" name="origin" value="78.42302799224855,17.575057307999252" required>
-        <label>Destination (lon,lat):</label>
-        <input type="text" name="destination" value="78.41159105300905,17.4849054198743" required>
-        <button type="submit">Show Map</button>
+    <div class="collapse" id="navbarToggleExternalContent">
+        <div class="bg-dark p-4">
+          <h5 class="text-white h4">Goal of This Project!!</h5>
+          <span class="" style="color: azure;">Our goal is to provide a real-time traffic-aware route suggestion system that helps users navigate efficiently by considering live traffic conditions. Using FastAPI, TomTom Traffic API, and OpenRouteService, this system dynamically calculates optimal routes, highlights congestion levels with color-coded paths, and displays the final estimated travel time at the destination. The interactive map, powered by Folium, enhances user experience by visually representing traffic insights, ensuring smarter and faster travel decisions. 🚗🗺️</span>
+        </div>
+      </div>
+      <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid header-container">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          
+          <div class="header_div">
+            <h3 class="">UrbanFlow</h3>
+            <p style="margin: 0;">Real-Time Route Optimization</p>
+          </div>
+        </div>
+      </nav>
+
+    <form id="routeForm">
+        
+
+        <label>Origin (City or Address):</label>
+        <div class="origin_div">
+            <input type="text" id="origin" value="Miyapur, Hyderabad" required class="origin_css">
+            <button type="button" id="getLiveLocation" class="btn " title="Get live location">
+                <i class='fa fa-map-marker' style="    font-size: 30px;"></i>
+            </button>
+        </div>
+        <label>Destination (City or Address):</label>
+        <div class="des_div">
+            <input type="text" id="destination" value="Kukatpally, Hyderabad" required>
+
+            <button type="submit" class=" button_show btn btn-success">Start Map</button>
+        </div>
         <hr>
         <iframe id="map" width="100%" height="500px"></iframe>
     </form>
-    <!-- <hr> -->
-    
+
     <script>
-        document.querySelector("form").onsubmit = function(event) {
+        const TOMTOM_API_KEY = "eZEcIlVKK9lGUqDzqLtnm8b7xOG1FfFG";
+
+        // Function to get coordinates from location name
+        async function getCoordinates(location) {
+            const url = `https://api.tomtom.com/search/2/geocode/${encodeURIComponent(location)}.json?key=${TOMTOM_API_KEY}`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.results.length === 0) {
+                alert("Location not found: " + location);
+                return null;
+            }
+
+            const lat = data.results[0].position.lat;
+            const lon = data.results[0].position.lon;
+            return `${lon},${lat}`;
+        }
+
+        // Function to get location name from coordinates (Reverse Geocoding)
+        async function getLocationName(lat, lon) {
+            const url = `https://api.tomtom.com/search/2/reverseGeocode/${lat},${lon}.json?key=${TOMTOM_API_KEY}`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.addresses.length === 0) {
+                alert("Could not find location name");
+                return null;
+            }
+
+            return data.addresses[0].address.freeformAddress; // Returns readable address
+        }
+
+        document.getElementById("routeForm").onsubmit = async function (event) {
             event.preventDefault();
-            let origin = document.querySelector('input[name="origin"]').value;
-            let destination = document.querySelector('input[name="destination"]').value;
-            document.getElementById("map").src = `http://127.0.0.1:8000/map?origin=${origin}&destination=${destination}`;
+
+            const originInput = document.getElementById("origin").value;
+            const destinationInput = document.getElementById("destination").value;
+
+            const originCoords = await getCoordinates(originInput);
+            const destinationCoords = await getCoordinates(destinationInput);
+
+            if (originCoords && destinationCoords) {
+                document.getElementById("map").src = `http://127.0.0.1:8000/map?origin=${originCoords}&destination=${destinationCoords}`;
+            }
+        };
+
+        // Get user's live location and convert to address
+        document.getElementById("getLiveLocation").onclick = function () {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    async function (position) {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+
+                        const locationName = await getLocationName(lat, lon);
+                        if (locationName) {
+                            document.getElementById("origin").value = locationName; // Set address in input field
+                        }
+                    },
+                    function (error) {
+                        alert("Error getting location: " + error.message);
+                    }
+                );
+            } else {
+                alert("Geolocation is not supported by your browser.");
+            }
         };
     </script>
+
 </body>
+
 </html>
