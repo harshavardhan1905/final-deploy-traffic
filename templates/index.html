@@ -36,7 +36,8 @@
     <form id="routeForm">
         
 
-        <label>Origin (City or Address):</label>
+        <div class="coordinates">
+            <label>Origin (City or Address):</label>
         <div class="origin_div">
             <input type="text" id="origin" value="Miyapur, Hyderabad" required class="origin_css">
             <button type="button" id="getLiveLocation" class="btn " title="Get live location">
@@ -48,6 +49,7 @@
             <input type="text" id="destination" value="Kukatpally, Hyderabad" required>
 
             <button type="submit" class=" button_show btn btn-success">Start Map</button>
+        </div>
         </div>
         <hr>
         <iframe id="map" width="100%" height="500px"></iframe>
