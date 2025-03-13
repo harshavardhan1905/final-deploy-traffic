@@ -86,7 +86,7 @@ def calculate_eta(route_coords: list, traffic_data_list: list) -> dict:
         if traffic_data and "flowSegmentData" in traffic_data:
             speed = traffic_data["flowSegmentData"].get("currentSpeed", 60)  # Default 60 km/h
         else:
-            speed = 60  # Default speed if no traffic data
+            speed = 40  # Default speed if no traffic data
             
         # Calculate time for this segment (hours)
         segment_time = segment_distance / speed
