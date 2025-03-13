@@ -1,4 +1,6 @@
 from fastapi import FastAPI, HTTPException, WebSocket
+import uvicorn
+from fastapi import FastAPI
 import uuid
 from fastapi.staticfiles import StaticFiles 
 import asyncio
@@ -24,6 +26,8 @@ position_tracker = PositionTracker()
 @app.get("/")
 async def read_root():
     return FileResponse("./templates/index.html")
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)  # Ensure host is 0.0.0.0
 
 @app.websocket("/ws/position/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: str):
